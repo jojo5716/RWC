@@ -1,17 +1,16 @@
 /*!
  * calendars.js v0.0.1
- * Autor: Jonathan Rodriguez.
  *
+ * Author: Jonathan Rodriguez.
  * Freely distributable under the MIT license.
  *
  * Full details and documentation:
  */
-
 (function(root, undefined) {
     var lib = {};
 
     // Current version
-    lib.version = '0.0.1';
+    lib.version = '0.0.2';
 
     var cal_days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     var cal_months_labels =['January', 'February', 'March', 'April', 'May', 'June',
@@ -27,8 +26,12 @@
        start_date: '', //Selected default date (if is empty we'll understand it's a today)
        cal_days_in_month: cal_days_in_month,
        cal_months_labels: cal_months_labels,
-       cal_days_labels: cal_days_labels
+       cal_days_labels: cal_days_labels,
+       hide_weeks_label: false,
     };
+
+    // Exports methods
+    root['calendar_responsive'] = lib;
 
     // Public methods
     lib.startCalendar = function(args){
@@ -65,7 +68,6 @@
 
         $calendar.innerHTML = html_calendars;
 
-        lib._setListenersDay();
         lib._setListenersScroll();
     };
 
@@ -76,22 +78,24 @@
 
         var html = '';
         var [mm, dd, yyyy] = lib._numbersDate(string_date);
-
         var firstDay = new Date(yyyy, mm, 1);
         var startingDay = firstDay.getDay();
         var monthLength = lib.settings.cal_days_in_month[mm - 1];
         var day_number = 0;
+
         // Just Febrary
-        if (mm == 1){
+        if ((mm - 1) == 1){
             if((yyyy % 4 == 0 && yyyy % 100 != 0) || yyyy % 400 == 0){
                 monthLength = 29;
             }
         }
-
         var monthName = lib.settings.cal_months_labels[mm - 1];
         html += '<div class="calendar"><div class="calendar-header">' + monthName + " " + yyyy + '</div><div class="calendar-header-days">';
+
+        hide_weekday_label = (lib.settings.hide_weeks_label) ? true: false;
         for(var i = 0; i <= 6; i++ ){
-            html += '<span class="calendar-header-day">' + lib.settings.cal_days_labels[i] + '</span>';
+            var name_weekday = (hide_weekday_label) ? '': lib.settings.cal_days_labels[i]
+            html += '<span class="calendar-header-day">' + name_weekday + '</span>';
         }
 
         html += '</div><div class="calendar-days">';
@@ -99,7 +103,6 @@
         for (var i = 0; i < startingDay; i++){
             html += '<span class="calendar-day"></span>';
         }
-
 
         var day = 1;
         // Creating days
@@ -111,6 +114,7 @@
             html += '<span data-day="' + day_number+
                         '"data-month="' + mm +
                         '" data-year="' + yyyy +
+                        '" onclick="' + 'calendar_responsive.onClick(this)' +
                         '" class="calendar-day">' + day +
                     '</span>';
 
@@ -181,19 +185,7 @@
         dd = (dd < 10) ? '0' + dd : dd;
         mm = (mm < 10) ? '0' + mm : mm;
 
-
         return mm + '/' + dd + '/' + yyyy;
-    }
-
-    lib._setListenersDay = function(){
-        var listener_element = "#" + lib.settings.calendar_container + " span.calendar-day";
-        var days_length = document.querySelectorAll(listener_element).length;
-        for(let i = 0; i < days_length; i++){
-            var calendar_day = document.querySelectorAll(listener_element)[i];
-            calendar_day.onclick = function(e){
-                console.log(this);
-            }
-        }
     }
 
     lib._setListenersScroll = function(){
@@ -226,10 +218,11 @@
                 if($calendars_container.scrollTop == 0)
                     $calendars_container.scrollTop = $first_calendar.scrollHeight + 2;
             }
-            lib._setListenersDay();
         });
     }
-    // Exports methods
-    root['calendar_responsive'] = lib;
+
+    lib.onClick = function(element){
+        console.log(element);
+    }
 // Root will be `window` in browser
 }(this));
